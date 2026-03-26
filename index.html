@@ -130,7 +130,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--brown-d
 <div class="profile-overlay" id="profile-overlay" style="display:none" onclick="profileOverlayClose(event)"><div class="profile-modal" id="profile-box"></div></div>
 <script>
 async function hashPin(pin){const enc=new TextEncoder().encode(pin);const buf=await crypto.subtle.digest('SHA-256',enc);return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
-const PINS={josh:'03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',sarah:'03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'};
+const PINS={josh:'b21ca77b6575f5be955715b6f6aa02b04786e139da733f3d78fc4c72009b4afb',sarah:'346e70cff22884ed701572ba3fd49b77020662c8db775a1160d3a8e2cedeecc2'};
 const STORAGE_KEY='ourlist-v5';
 const SUPABASE_URL='https://ccfetfniolxzacsdxmyn.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_I2lY6zpxLYvn3qyebksRcg_vRPH8xfy';
@@ -234,6 +234,7 @@ function closeModal(){document.getElementById('modal-overlay').style.display='no
 function overlayClose(e){if(e.target.id==='modal-overlay')closeModal();}
 document.getElementById('pin-josh').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin('josh');});
 document.getElementById('pin-sarah').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin('sarah');});
+</script>
 </script>
 </body>
 </html>

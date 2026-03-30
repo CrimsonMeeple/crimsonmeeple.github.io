@@ -410,8 +410,13 @@ function renderNotifications(){
 // ===================== LOGIN / LOGOUT =====================
 async function doLogin(user){
   const pin=document.getElementById('pin-'+user).value,err=document.getElementById('err-'+user);
-  const hashed=await hashPin(pin);
-  if(hashed!==PINS[user]){err.textContent='Incorrect PIN';return;}
+  if(!pin){err.textContent='Please enter your PIN';return;}
+  try{
+    const hashed=await hashPin(pin);
+    if(hashed!==PINS[user]){err.textContent='Incorrect PIN';return;}
+  }catch(e){
+    err.textContent='Login error: '+e.message;return;
+  }
   err.textContent='';
   currentUser=user;
   STATE=await loadState();
@@ -422,6 +427,7 @@ async function doLogin(user){
   tickRepeats();
   updateNotifBadge();
   switchMainTab('todos');
+}
 }
 function doLogout(){currentUser=null;document.getElementById('pin-josh').value='';document.getElementById('pin-sarah').value='';showPanel('login-panel');}
 

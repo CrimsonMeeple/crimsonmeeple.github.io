@@ -315,7 +315,7 @@ const PINS={josh:'b21ca77b6575f5be955715b6f6aa02b04786e139da733f3d78fc4c72009b4a
 const STORAGE_KEY='ourlist-v6';
 const SUPABASE_URL='https://ccfetfniolxzacsdxmyn.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_I2lY6zpxLYvn3qyebksRcg_vRPH8xfy';
-let currentUser=null,currentTab='active',currentMainTab='todos',currentRecipeTab='all',currentRelTab='active',dragSrc=null;
+currentUser=null,currentTab='active',currentMainTab='todos',currentRecipeTab='all',currentRelTab='active',dragSrc=null;
 
 // Gottman prompts pool
 const GOTTMAN_PROMPTS=[
@@ -681,7 +681,7 @@ function deleteRecipe(id){
 }
 
 // ===================== RELATIONSHIP =====================
-let currentRelTab='active';
+currentRelTab='active';
 function switchRelTab(tab){
   currentRelTab=tab;
   document.getElementById('reltab-active').classList.toggle('active',tab==='active');

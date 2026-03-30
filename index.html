@@ -383,7 +383,7 @@ function starsHTML(n){let h='';for(let i=1;i<=5;i++)h+=(i<=n)?'&#9733;':'&#9734;
 // ===================== NOTIFICATIONS =====================
 function addNotification(type,msg){
   if(!STATE.notifications)STATE.notifications=[];
-  STATE.notifications.unshift({id:uid(),type,msg,time:fmtNow(),read:false});
+  STATE.notifications.unshift({id:uid(),type,msg,time:fmtNow(),read:false,for:otherUser()});
   saveState();
   updateNotifBadge();
 }
@@ -404,7 +404,7 @@ function renderNotifications(){
   updateNotifBadge();
   if(!STATE.notifications||!STATE.notifications.length){el.innerHTML='<div class="empty-state">No notifications yet.</div>';return;}
   const icons={todo:'&#9989;',bucket:'&#129524;',prompt:'&#10024;',lovenote:'&#128140;',recipe:'&#127859;',wish:'&#127873;'};
-  el.innerHTML=STATE.notifications.map(n=>'<div class="notif-item"><div class="notif-icon">'+(icons[n.type]||'&#128276;')+'</div><div class="notif-body"><div class="notif-msg">'+esc(n.msg)+'</div><div class="notif-time">'+esc(n.time)+'</div></div><button class="notif-dismiss" onclick="dismissNotif(\''+n.id+'\')" title="Dismiss">&#10005;</button></div>').join('');
+  el.innerHTML=(STATE.notifications||[]).filter(n=>!n.for||n.for===currentUser).map(n=>'<div class="notif-item"><div class="notif-icon">'+(icons[n.type]||'&#128276;')+'</div><div class="notif-body"><div class="notif-msg">'+esc(n.msg)+'</div><div class="notif-time">'+esc(n.time)+'</div></div><button class="notif-dismiss" onclick="dismissNotif(\''+n.id+'\')" title="Dismiss">&#10005;</button></div>').join('');
 }
 
 // ===================== LOGIN / LOGOUT =====================
@@ -730,7 +730,7 @@ function sendLoveNote(){
   const item={id:uid(),type:'lovenote',text,from:currentUser,to:otherUser(),fromRead:true,toRead:false,createdAt:fmtNow(),archived:false};
   if(!STATE.relationship)STATE.relationship={active:[],archive:[]};
   STATE.relationship.active.unshift(item);
-  addNotification('lovenote',displayName(currentUser)+' sent you a love note! &#128140;');
+  if(currentUser!==currentUser)addNotification('lovenote',displayName(currentUser)+' sent you a love note! &#128140;');
   saveState();closeModal();switchRelTab('active');
 }
 function renderRelationship(){
@@ -789,6 +789,7 @@ function renderPromptCard(item,archived){
     const bothRead=item.joshRead&&item.sarahRead&&item.joshWrite&&item.sarahWrite;
     if(bothRead)h+='<div style="margin-top:8px"><button class="btn-small" onclick="archiveRelItem(\''+item.id+'\')">Archive &#8594;</button></div>';
   }
+  if(archived){h+='<div style="margin-top:8px"><button class="btn-small" style="border-color:var(--red);color:var(--red)" onclick="deleteRelItem(\''+item.id+'\',\'prompt\')">Delete &#10005;</button></div>';}
   h+='</div>';return h;
 }
 function renderLoveNote(item,archived){
@@ -803,8 +804,13 @@ function renderLoveNote(item,archived){
   }else{
     h+='<div class="love-note-text" style="filter:blur(5px);user-select:none">'+esc(item.text)+'</div><button class="btn-small" style="margin-top:8px" onclick="readLoveNote(\''+item.id+'\')">&#128140; Read Note</button>';
   }
-  if(!archived){h+='<div style="margin-top:10px;display:flex;gap:6px"><button class="btn-small" onclick="archiveRelItem(\''+item.id+'\')">Archive &#8594;</button></div>';}
+    if(archived){h+='<div style="margin-top:10px"><button class="btn-small" style="border-color:var(--red);color:var(--red)" onclick="deleteRelItem(\''+item.id+'\',\'lovenote\')">Delete &#10005;</button></div>';}if(!archived){h+='<div style="margin-top:10px;display:flex;gap:6px"><button class="btn-small" onclick="archiveRelItem(\''+item.id+'\')">Archive &#8594;</button></div>';}
   h+='</div>';return h;
+}
+function deleteRelItem(id,type){
+  if(!confirm('Permanently delete this '+(type==='lovenote'?'love note':'prompt')+'?'))return;
+  STATE.relationship.archive=(STATE.relationship.archive||[]).filter(x=>x.id!==id);
+  saveState();renderRelationship();
 }
 function readLoveNote(id){
   const item=(STATE.relationship.active||[]).find(x=>x.id===id);

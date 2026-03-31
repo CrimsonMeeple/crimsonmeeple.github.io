@@ -942,6 +942,7 @@ function addReminderToCalendar(name,date){
   const title=encodeURIComponent('Reminder: '+name);
   const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+title+'&dates='+d+'/'+d;
   window.open(url,'_blank');
+}
 function addBirthdayToCalendar(name,date){
   if(!date)return;
   const d=date.replace(/-/g,'');

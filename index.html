@@ -247,6 +247,12 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--brown-d
         <option value="sarah">Sarah</option>
         <option value="both">Both</option>
       </select>
+      <select class="filter-select" id="filter-sort" onchange="renderItems()">
+        <option value="">Sort: Default</option>
+        <option value="due-asc">Due date: Soonest first</option>
+        <option value="due-desc">Due date: Latest first</option>
+        <option value="overdue">Overdue first</option>
+      </select>
       <button class="filter-clear" onclick="clearFilters()">Clear</button>
     </div>
     <div class="add-bar" id="add-bar">
@@ -478,6 +484,10 @@ function renderItems(){
     if(i.type==='bucket')return i.assignee===user||i.assignee==='both';
     return i.assignee===user||i.assignee==='both';
   });
+  const sort=document.getElementById('filter-sort')?.value||'';
+  if(sort==='due-asc')active.sort((a,b)=>{if(!a.deadline&&!b.deadline)return 0;if(!a.deadline)return 1;if(!b.deadline)return-1;return a.deadline<b.deadline?-1:1;});
+  else if(sort==='due-desc')active.sort((a,b)=>{if(!a.deadline&&!b.deadline)return 0;if(!a.deadline)return 1;if(!b.deadline)return-1;return a.deadline>b.deadline?-1:1;});
+  else if(sort==='overdue')active.sort((a,b)=>{const ao=isOverdue(a.deadline)&&!a.completed,bo=isOverdue(b.deadline)&&!b.completed;if(ao&&!bo)return-1;if(!ao&&bo)return 1;return 0;});
   if(!active.length){el.innerHTML='<div class="empty-state">Nothing on the list yet!</div>';return;}
   el.innerHTML=active.map(i=>i.type==='bucket'?renderBucket(i):renderTodo(i,false,'')).join('');
   addDragListeners();
@@ -848,11 +858,12 @@ function renderWishBucket(b){
   const gifts=b.gifts||[];const bought=gifts.filter(g=>g.purchased).length;
   const bdayStr=b.birthdate?' · &#127874; '+esc(b.birthdate):'';
   const sendByStr=b.sendBy?' · Send by '+esc(b.sendBy):'';
+  const reminderStr=b.reminder?' · Reminder: '+esc(b.reminder):'';
   let calBtn='';
   if(b.birthdate){
     calBtn='<button class="btn-small" onclick="event.stopPropagation();addBirthdayToCalendar(\''+esc(b.name)+'\',\''+esc(b.birthdate)+'\')" title="Add to Google Calendar">&#128197;</button>';
   }
-  return'<div class="wish-bucket'+(b.expanded?' open':'')+'"><div class="wish-header" onclick="toggleWishBucket(\''+b.id+'\')"><span class="wish-chevron">&#9654;</span><div class="wish-title-area"><div class="wish-name">'+esc(b.name)+'</div><div class="wish-meta">'+gifts.length+' idea'+(gifts.length!==1?'s':'')+' · '+bought+' bought'+bdayStr+sendByStr+'</div></div><div class="wish-actions" onclick="event.stopPropagation()">'+calBtn+'<button class="btn-small" onclick="openWishBucketModal(\''+b.id+'\')">Edit</button><button class="btn-small danger" onclick="deleteWishBucket(\''+b.id+'\')">Del</button></div></div>'+(b.expanded?'<div class="wish-items">'+gifts.map(g=>renderGiftCard(g,b.id)).join('')+(gifts.length===0?'<div style="font-size:12px;color:var(--brown);font-style:italic;padding:3px 0">No gift ideas yet</div>':'')+'</div><div class="wish-add-row"><button class="btn-bucket-add" onclick="openGiftModal(\''+b.id+'\')">+ Add Gift Idea</button></div>':'')+'</div>';
+  return'<div class="wish-bucket'+(b.expanded?' open':'')+'"><div class="wish-header" onclick="toggleWishBucket(\''+b.id+'\')"><span class="wish-chevron">&#9654;</span><div class="wish-title-area"><div class="wish-name">'+esc(b.name)+'</div><div class="wish-meta">'+gifts.length+' idea'+(gifts.length!==1?'s':'')+' · '+bought+' bought'+bdayStr+sendByStr+reminderStr+'</div></div><div class="wish-actions" onclick="event.stopPropagation()">'+calBtn+'<button class="btn-small" onclick="openWishBucketModal(\''+b.id+'\')">Edit</button><button class="btn-small danger" onclick="deleteWishBucket(\''+b.id+'\')">Del</button></div></div>'+(b.expanded?'<div class="wish-items">'+gifts.map(g=>renderGiftCard(g,b.id)).join('')+(gifts.length===0?'<div style="font-size:12px;color:var(--brown);font-style:italic;padding:3px 0">No gift ideas yet</div>':'')+'</div><div class="wish-add-row"><button class="btn-bucket-add" onclick="openGiftModal(\''+b.id+'\')">+ Add Gift Idea</button></div>':'')+'</div>';
 }
 function renderGiftCard(g,bid){
   const stars=g.ranking?starsHTML(g.ranking):'';
@@ -891,11 +902,11 @@ function deleteWishBucket(id){if(!confirm('Delete this entire wish list?'))retur
 
 function openWishBucketModal(editId){
   const b=editId?(STATE.wishlist||[]).find(x=>x.id===editId):null;
-  showModal('<div class="modal-title">'+(b?'Edit Wish List':'New Wish List')+'</div><div class="field"><label>Person\'s Name *</label><input id="f-wname" type="text" value="'+esc(b?b.name:'')+'" placeholder="e.g. Mom"></div><div class="field"><label>Birthdate (optional)</label><input id="f-wbday" type="date" value="'+(b&&b.birthdate?b.birthdate:'')+'" ></div><div class="field"><label>Send By Date (optional)</label><input id="f-wsendby" type="date" value="'+(b&&b.sendBy?b.sendBy:'')+'" ></div><div class="field"><label>Address (optional)</label><textarea id="f-waddr" placeholder="Shipping address...">'+esc(b?b.address||'':'')+'</textarea></div><div class="modal-actions"><button class="btn-modal secondary" onclick="closeModal()">Cancel</button><button class="btn-modal primary" onclick="saveWishBucket(\''+(editId||'')+'\')">'+(b?'Save':'Create')+'</button></div>');
+  showModal('<div class="modal-title">'+(b?'Edit Wish List':'New Wish List')+'</div><div class="field"><label>Person\'s Name *</label><input id="f-wname" type="text" value="'+esc(b?b.name:'')+'" placeholder="e.g. Mom"></div><div class="field"><label>Birthdate (optional)</label><input id="f-wbday" type="date" value="'+(b&&b.birthdate?b.birthdate:'')+'" ></div><div class="field"><label>Send By Date (optional)</label><input id="f-wsendby" type="date" value="'+(b&&b.sendBy?b.sendBy:'')+'" ></div><div class="field"><label>Reminder Date (optional)</label><input id="f-wreminder" type="date" value="'+(b&&b.reminder?b.reminder:'')+'" ></div><div class="field"><label>Address (optional)</label><textarea id="f-waddr" placeholder="Shipping address...">'+esc(b?b.address||'':'')+'</textarea></div><div class="modal-actions"><button class="btn-modal secondary" onclick="closeModal()">Cancel</button><button class="btn-modal primary" onclick="saveWishBucket(\''+(editId||'')+'\')">'+(b?'Save':'Create')+'</button></div>');
 }
 function saveWishBucket(editId){
   const name=document.getElementById('f-wname').value.trim();if(!name){alert('Please enter a name.');return;}
-  const data={name,birthdate:document.getElementById('f-wbday').value||null,sendBy:document.getElementById('f-wsendby').value||null,address:document.getElementById('f-waddr').value.trim()||null};
+  const data={name,birthdate:document.getElementById('f-wbday').value||null,sendBy:document.getElementById('f-wsendby').value||null,reminder:document.getElementById('f-wreminder').value||null,address:document.getElementById('f-waddr').value.trim()||null};
   if(!STATE.wishlist)STATE.wishlist=[];
   if(editId){const b=STATE.wishlist.find(x=>x.id===editId);if(b)Object.assign(b,data);}
   else STATE.wishlist.push({id:uid(),gifts:[],expanded:true,...data});
@@ -925,6 +936,12 @@ function saveGift(bid,editId){
   else b.gifts.push({id:uid(),purchased:false,expanded:false,...data});
   saveState();closeModal();renderWishlist();
 }
+function addReminderToCalendar(name,date){
+  if(!date)return;
+  const d=date.replace(/-/g,'');
+  const title=encodeURIComponent('Reminder: '+name);
+  const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+title+'&dates='+d+'/'+d;
+  window.open(url,'_blank');
 function addBirthdayToCalendar(name,date){
   if(!date)return;
   const d=date.replace(/-/g,'');

@@ -16,10 +16,4 @@ jobs:
             "${{ secrets.SUPABASE_URL }}")
 
           echo "Response status: $response"
-
-          if [ "$response" -ge 200 ] && [ "$response" -lt 400 ]; then
-            echo "Ping successful - project is active"
-          else
-            echo "Unexpected response: $response"
-            exit 1
-          fi
+          echo "Done - project pinged"

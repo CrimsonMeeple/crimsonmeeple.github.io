@@ -13,11 +13,13 @@ jobs:
       - name: Ping Supabase
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "${{ secrets.SUPABASE_URL }}")
+            "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
 
           echo "Response status: $response"
 
-          if [ "$response" -eq 404 ] || ([ "$response" -ge 200 ] && [ "$response" -lt 400 ]); then
+          if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
             echo "Ping successful - project is active"
           else
             echo "Unexpected response: $response"

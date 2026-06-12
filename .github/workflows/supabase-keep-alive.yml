@@ -11,8 +11,8 @@ jobs:
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
             "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive?select=id&limit=1" \
-            -H "apikey: ${{ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...5TsI3YTfgXmUwkSD0wZEZz_SkffMtAa9zoR208ZsEfs }}" \
-            -H "Authorization: Bearer ${{ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...5TsI3YTfgXmUwkSD0wZEZz_SkffMtAa9zoR208ZsEfs }}")
+            -H "apikey: ${{ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZmV0Zm5pb2x4emFjc2R4bXluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTA4NzMsImV4cCI6MjA5MDAyNjg3M30.5TsI3YTfgXmUwkSD0wZEZz_SkffMtAa9zoR208ZsEfs }}" \
+            -H "Authorization: Bearer ${{ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZmV0Zm5pb2x4emFjc2R4bXluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTA4NzMsImV4cCI6MjA5MDAyNjg3M30.5TsI3YTfgXmUwkSD0wZEZz_SkffMtAa9zoR208ZsEfs }}")
           echo "Response status: $response"
           if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
             echo "Ping successful - project is active"

@@ -15,7 +15,7 @@ jobs:
           response=$(curl -s -o /dev/null -w "%{http_code}" \
             "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+            -H "Authorization: Bearer ${{ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjZmV0Zm5pb2x4emFjc2R4bXluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTA4NzMsImV4cCI6MjA5MDAyNjg3M30.5TsI3YTfgXmUwkSD0wZEZz_SkffMtAa9zoR208ZsEfs }}")
 
           echo "Response status: $response"
 
